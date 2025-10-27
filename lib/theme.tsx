@@ -11,7 +11,7 @@ export const colors = {
     background: '#121212',
     border: '#cccccc',
     // white: '#ffffff',
-    // card: '#f0f0f0',
+    card: '#313131',
     // carder: '#f6f6f6',
 
     // blue: '#4147d3',

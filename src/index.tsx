@@ -6,6 +6,7 @@ import * as theme from 'lib/theme';
 
 import { NotFoundPage } from './404';
 import { DashboardPage } from './dashboard';
+import { ProjectPage } from './project/page';
 
 export default () => {
     return (
@@ -16,6 +17,7 @@ export default () => {
 
             <Routes>
                 <Route path='/' element={<DashboardPage />} />
+                <Route path='/projects/:projectId' element={<ProjectPage />} />
                 <Route path='*' element={<NotFoundPage />} />
             </Routes>
         </>
