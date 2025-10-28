@@ -1,5 +1,5 @@
 import React from 'react';
-import { Base, Flex, Card, Container, Text, Clickable } from 'lib/atoms';
+import { Base, Flex, Card, Container, Text, Clickable, BaseProps } from 'lib/atoms';
 import { Button } from '@/components/button';
 import { Delimeter } from '@/components/delimeter';
 import { Editor } from '@monaco-editor/react';
@@ -19,9 +19,38 @@ type File = {
     data: any;
 };
 
-const File = ({ file }: { file: File }) => {
-
+const File = ({ selected, file, onClick, ...props }: { selected?: boolean, file: File, onClick: () => void } & BaseProps) => {
+    return (
+        <Base onClick={onClick} {...props}>
+            <Clickable background={selected ? '#121212' : 'none'}>
+                <Text weight={selected ? 'bold' : '400'} size="14px">{file.name}.{file.extension}</Text>
+            </Clickable>
+        </Base>
+    )
 };
+
+// const useArrayField = ([state, setState], predicate, def) => {
+//     const value = React.useMemo(() => state.find(predicate) ?? def, [state, predicate, def]);
+//     const setValue = React.useCallback(($) => {
+//         setState(state.map((entry) => {
+//             if (predicate(entry)) {
+//                 return $;
+//             } else {
+//                 return entry
+//             }
+//         }));
+//     }, [setState, state]);
+
+//     return [value, setValue];
+// };
+
+// const useFileTree = ([state, setState] = React.useState([] as File[])) => {
+//     const get = React.useCallback((path: string) => {
+
+//     }, []);
+
+//     return { get, list };
+// };
 
 export const ProjectPage = () => {
     const { projectId } = useParams();
@@ -40,15 +69,39 @@ export const ProjectPage = () => {
     const setProject = React.useCallback(($: any) => set(projectId as string, $), [projectId, set]);
 
     // const [projects, setProjects] = useLocalStorage('projects', [] as { name: string }[]);
-    const [code, setCode] = React.useState('');
+    
     const [files, setFiles] = useField([project, setProject], 'files', []);
 
     const addFileToRoot = React.useCallback(() => {
         setFiles([...files, {
-            name: 'new-file',
+            name: 'file-'+Math.random(),
             extension: 'ts',
+            content: '',
+            children: [],
         }]);
     }, [setFiles, files]);
+
+    const [index, setIndex] = React.useState(0);
+
+    const file = React.useMemo(() => files[index], [files, index]);
+    const setFile = React.useCallback(($) => setFiles(files.map((e, i) => i === index ? $ : e)), [setFiles, files, index]);
+
+    // const [file, setFile] = useArrayField([files, setFiles], (f) => f.name === path.slice(1), null);
+
+    const [code, setCode] = useField([file ?? {}, setFile], 'content', '');
+
+    const deleteFile = React.useCallback(() => {
+        setFiles(files.filter((f, i) => i !== index ));
+    }, [setFiles, files, index]);
+
+    const renameFile = React.useCallback(() => {
+        if (!file) {
+            return;
+        }
+
+        const name = prompt(`New filename`, file.name)
+        setFile({...file, name })
+    }, [file, setFile]);
 
     return (
         <Container p="128px 20px">
@@ -61,25 +114,35 @@ export const ProjectPage = () => {
                     <Flex p="24px" justify="space-between">
                         <Text weight="800">Файлы</Text>
 
-                        <Clickable w="23px" h="24px" radius="6px" border="1px solid #cccccc" onClick={addFileToRoot}>
-                            <Flex w="100%" h="100%" align="center" justify="center">
-                                <Text size="14px" weight="bold">+</Text>
-                            </Flex>
-                        </Clickable>
+                        <Flex gap="8px">
+                            <Clickable w="23px" h="24px" radius="6px" border="1px solid #cccccc" onClick={addFileToRoot}>
+                                <Flex w="100%" h="100%" align="center" justify="center">
+                                    <Text size="14px" weight="bold">+</Text>
+                                </Flex>
+                            </Clickable>
+
+                            <Clickable w="23px" h="24px" radius="6px" border="1px solid yellow" onClick={renameFile}>
+                                <Flex w="100%" h="100%" align="center" justify="center">
+                                    <Text size="14px" weight="bold" color="yellow">e</Text>
+                                </Flex>
+                            </Clickable>
+
+                            <Clickable w="23px" h="24px" radius="6px" border="1px solid red" onClick={deleteFile}>
+                                <Flex w="100%" h="100%" align="center" justify="center">
+                                    <Text size="14px" weight="bold" color="red">x</Text>
+                                </Flex>
+                            </Clickable>
+                        </Flex>
                     </Flex>
 
                     <Base p="0 24px">
-                        {files.map((file) => (
-                            <Base>
-                                <Clickable>
-                                    <Text size="14px">{file.name}.{file.extension}</Text>
-                                </Clickable>
-                            </Base>
+                        {files.map((file, i) => (
+                            <File selected={i === index} file={file} key={i} onClick={() => setIndex(i)} />
                         ))}
                     </Base>
                 </Card>
 
-                <Card w="100%" h="50vh" radius="24px" style={{ overflow: 'hidden' }}>
+                <Card w="100%" h="50vh" radius="24px" style={{ overflow: 'hidden' }} background="#1e1e1e">
                     <Editor
                         value={code}
                         onChange={(e) => setCode(e ?? '')}
