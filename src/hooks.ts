@@ -1,6 +1,6 @@
 import React from 'react';
 
-const indifferentStorage = {
+export const indifferentStorage = {
     getItem: (name: string) => {
         if (typeof window === 'undefined') {
             return null;
@@ -17,7 +17,7 @@ const indifferentStorage = {
     },
 };
 
-const useLocalStorage = <T,>(name: string, def: T) => {
+export const useLocalStorage = <T,>(name: string, def: T) => {
     const [state, setState] = React.useState(indifferentStorage.getItem(name) ?? def);
 
     React.useEffect(() => {
@@ -59,4 +59,20 @@ export const useField = <T, K extends keyof T, S extends T[K]>([state, setState]
     }, [state, name, setState])
 
     return [value, setValue];
+};
+
+export const useForceUpdate = () => {
+    const [, setState] = React.useState(Object.create(null));
+    return React.useCallback(() => setState(Object.create(null)), []);
+}
+
+export const useReactive = (r) => {
+    const forceUpdate = useForceUpdate();
+
+    React.useEffect(() => {
+        return r.on(forceUpdate);
+        // return r.on(() => console.log('update'));
+    }, []);
+
+    return r;
 };

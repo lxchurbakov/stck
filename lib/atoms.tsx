@@ -45,7 +45,7 @@ export const Base = styled.div<BaseProps>`
 
 export const Container = ({ children, ...props }: React.PropsWithChildren<BaseProps>) => {
     return (
-        <Base w="100%" mw="1080px" m="0 auto" p="0 20px" {...props}>
+        <Base w="100%" mw="1280px" m="0 auto" p="0 20px" {...props}>
             {children}
         </Base>
     );
